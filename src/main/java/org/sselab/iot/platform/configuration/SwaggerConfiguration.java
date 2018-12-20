@@ -10,6 +10,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
+// Swagger 2.x for Spring Data Rest is not compatible with Spring Boot 2.x
+// Waiting for Swagger 3.x
+// See <https://github.com/springfox/springfox/issues/2298>
+// @Import(SpringDataRestConfiguration.class)
 public class SwaggerConfiguration {
 
   @Bean
