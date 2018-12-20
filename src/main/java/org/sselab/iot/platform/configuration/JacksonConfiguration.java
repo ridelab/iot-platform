@@ -1,4 +1,4 @@
-package com.qinhetea.configuration;
+package org.sselab.iot.platform.configuration;
 
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
