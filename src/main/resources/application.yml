@@ -5,8 +5,8 @@ spring:
     banner-mode: 'off'
 
 server:
-  port: 9000
+  port: 8080
 
 logging:
   level:
-    org.sselab: debug
+    org.sselab: trace
