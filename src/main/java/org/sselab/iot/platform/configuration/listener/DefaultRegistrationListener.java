@@ -16,7 +16,7 @@ import java.util.Collection;
 @Primary
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class DatabaseRegistrationListener implements RegistrationListener {
+public class DefaultRegistrationListener implements RegistrationListener {
 
   @Override
   public void registered(
@@ -24,6 +24,7 @@ public class DatabaseRegistrationListener implements RegistrationListener {
     Registration previousRegistration,
     Collection<Observation> previousObservations
   ) {
+    logger.trace("DefaultRegistrationListener#registered");
     logger.trace("registration = {}", registration);
     logger.trace("previousRegistration = {}", previousRegistration);
     logger.trace("previousObservations = {}", previousObservations);
@@ -36,6 +37,7 @@ public class DatabaseRegistrationListener implements RegistrationListener {
     Registration updatedRegistration,
     Registration previousRegistration
   ) {
+    logger.trace("DefaultRegistrationListener#updated");
     logger.trace("update = {}", update);
     logger.trace("updatedRegistration = {}", updatedRegistration);
     logger.trace("previousRegistration = {}", previousRegistration);
@@ -48,6 +50,7 @@ public class DatabaseRegistrationListener implements RegistrationListener {
     Collection<Observation> observations,
     boolean expired, Registration newRegistration
   ) {
+    logger.trace("DefaultRegistrationListener#unregistered");
     logger.trace("registration = {}", registration);
     logger.trace("observations = {}", observations);
     logger.trace("newRegistration = {}", newRegistration);
