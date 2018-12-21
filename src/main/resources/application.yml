@@ -3,6 +3,8 @@ spring:
     name: iot-platform
   main:
     banner-mode: 'off'
+  jpa:
+    show-sql: true
 
 server:
   port: 8080

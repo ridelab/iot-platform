@@ -10,10 +10,6 @@ import javax.persistence.Id;
 @Entity
 public class Device {
 
-  String registrationId;
-
-  String registration;
-
   String remark;
 
   @Id
