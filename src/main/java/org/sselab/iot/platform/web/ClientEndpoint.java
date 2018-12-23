@@ -44,7 +44,7 @@ public class ClientEndpoint {
         logger.trace("read request = {}", readRequest);
         val readResponse = lwM2mServer.send(registration, readRequest);
         logger.trace("read response = {}", readResponse);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(readResponse);
       case "write":
       case "create":
       case "delete":
