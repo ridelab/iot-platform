@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.*;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +57,21 @@ public class ClientEndpoint {
     @RequestBody ManagementWriteInput input
   ) throws InterruptedException {
     val request = new WriteRequest(input.getMode(), format, input.getPath(), input.getData());
+    return ResponseEntity.ok(manage(id, request));
+  }
+
+  @Data
+  public static class ManagementExecuteInput {
+    String path;
+    String parameters;
+  }
+
+  @PostMapping("/{id}/management/execute")
+  public ResponseEntity execute(
+    @PathVariable Long id,
+    @RequestBody ManagementExecuteInput input
+  ) throws InterruptedException {
+    val request = new ExecuteRequest(input.getPath(), input.getParameters());
     return ResponseEntity.ok(manage(id, request));
   }
 
