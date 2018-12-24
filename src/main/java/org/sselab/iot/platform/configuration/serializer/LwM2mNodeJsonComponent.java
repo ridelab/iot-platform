@@ -4,14 +4,15 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.val;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.*;
 import org.springframework.boot.jackson.JsonComponent;
+import org.sselab.iot.platform.util.ExceptionalFunction;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.stream.StreamSupport;
 
 // <https://www.baeldung.com/spring-boot-jsoncomponent>
 @JsonComponent
@@ -40,19 +41,19 @@ public class LwM2mNodeJsonComponent {
       if (!node.has("id")) throw new IllegalArgumentException();
       val id = node.get("id").asInt();
       if (node.has("instances")) {
-        val array = (ArrayNode) node.get("instances");
-        val instances = new LwM2mObjectInstance[array.size()];
-        for (int i = 0; i < array.size(); i++) {
-          instances[i] = parser.getCodec().treeToValue(array.get(i), LwM2mObjectInstance.class);
-        }
+        Iterable<JsonNode> elements = () -> node.get("instances").elements();
+        @SuppressWarnings("SuspiciousToArrayCall")
+        val instances = StreamSupport.stream(elements.spliterator(), false).
+          map(ExceptionalFunction.unchecked(n -> parser.getCodec().treeToValue(n, LwM2mNode.class))).
+          toArray(LwM2mObjectInstance[]::new);
         return new LwM2mObject(id, instances);
       }
       if (node.has("resources")) {
-        val array = (ArrayNode) node.get("resources");
-        val resources = new LwM2mResource[array.size()];
-        for (int i = 0; i < array.size(); i++) {
-          resources[i] = parser.getCodec().treeToValue(array.get(i), LwM2mResource.class);
-        }
+        Iterable<JsonNode> elements = () -> node.get("resources").elements();
+        @SuppressWarnings("SuspiciousToArrayCall")
+        val resources = StreamSupport.stream(elements.spliterator(), false).
+          map(ExceptionalFunction.unchecked(n -> parser.getCodec().treeToValue(n, LwM2mNode.class))).
+          toArray(LwM2mResource[]::new);
         return new LwM2mObjectInstance(id, resources);
       }
       if (node.has("values")) {
