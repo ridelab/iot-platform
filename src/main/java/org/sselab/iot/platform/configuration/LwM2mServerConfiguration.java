@@ -27,6 +27,7 @@ public class LwM2mServerConfiguration {
     server.getRegistrationService().addListener(registrationListener);
     server.getObservationService().addListener(observationListener);
     logger.info("Initialized LwM2mServer {}", server);
+    LwM2mServerHolder.setServer(server);
     return server;
   }
 
