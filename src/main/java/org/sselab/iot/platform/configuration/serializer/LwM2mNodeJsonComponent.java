@@ -24,7 +24,6 @@ public class LwM2mNodeJsonComponent {
       generator.writeStartObject();
       generator.writeNumberField("id", value.getId());
       generator.writeObjectField("type", value.getType());
-      generator.writeBooleanField("multiple", value.isMultiInstances());
       if (value.isMultiInstances()) {
         generator.writeObjectField("values", value.getValues());
       } else {
