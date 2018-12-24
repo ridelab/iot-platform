@@ -4,18 +4,17 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.*;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.*;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.sselab.iot.platform.configuration.LwM2mServerHolder;
 import org.sselab.iot.platform.repository.ClientRepository;
 
 @Slf4j
@@ -30,13 +29,23 @@ public class ClientEndpoint {
 
   private final ContentFormat format = ContentFormat.JSON;
 
+  @GetMapping("/{id}/model")
+  public ResponseEntity<LwM2mModel> model(
+    @PathVariable Long id
+  ) {
+    val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
+    val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
+    val model = LwM2mServerHolder.getServer().getModelProvider().getObjectModel(registration);
+    return ResponseEntity.ok(model);
+  }
+
   @Data
   public static class ManagementReadInput {
     String path;
   }
 
   @PostMapping("/{id}/management/read")
-  public ResponseEntity read(
+  public ResponseEntity<ReadResponse> read(
     @PathVariable Long id,
     @RequestBody ManagementReadInput input
   ) throws InterruptedException {
@@ -52,7 +61,7 @@ public class ClientEndpoint {
   }
 
   @PostMapping("/{id}/management/write")
-  public ResponseEntity write(
+  public ResponseEntity<WriteResponse> write(
     @PathVariable Long id,
     @RequestBody ManagementWriteInput input
   ) throws InterruptedException {
@@ -67,7 +76,7 @@ public class ClientEndpoint {
   }
 
   @PostMapping("/{id}/management/execute")
-  public ResponseEntity execute(
+  public ResponseEntity<ExecuteResponse> execute(
     @PathVariable Long id,
     @RequestBody ManagementExecuteInput input
   ) throws InterruptedException {
@@ -81,7 +90,7 @@ public class ClientEndpoint {
   }
 
   @PostMapping("/{id}/management/discover")
-  public ResponseEntity discover(
+  public ResponseEntity<DiscoverResponse> discover(
     @PathVariable Long id,
     @RequestBody ManagementDiscoverInput input
   ) throws InterruptedException {
