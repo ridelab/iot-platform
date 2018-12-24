@@ -10,7 +10,7 @@ import javax.persistence.Id;
 @Entity
 public class Device {
 
-  String remark;
+  String remark = "";
 
   @Id
   @GeneratedValue

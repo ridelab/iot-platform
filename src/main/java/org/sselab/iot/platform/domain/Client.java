@@ -13,9 +13,9 @@ import java.util.Optional;
 @Entity
 public class Client {
 
-  String name;
+  String name = "";
 
-  String remark;
+  String remark = "";
 
   String registrationId;
 
