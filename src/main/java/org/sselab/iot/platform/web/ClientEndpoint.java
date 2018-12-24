@@ -1,19 +1,24 @@
 package org.sselab.iot.platform.web;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.sselab.iot.platform.repository.ClientRepository;
 
 @Slf4j
@@ -26,40 +31,42 @@ public class ClientEndpoint {
 
   private final LwM2mServer lwM2mServer;
 
-  @PostMapping("/{id}/management/{operation}")
-  public ResponseEntity manage(
+  private final ContentFormat format = ContentFormat.JSON;
+
+  @Data
+  public static class ManagementReadInput {
+    String path;
+  }
+
+  @PostMapping("/{id}/management/read")
+  public ResponseEntity read(
     @PathVariable Long id,
-    @PathVariable String operation,
-    @RequestParam String path,
-    @RequestBody(required = false) LwM2mNode data
+    @RequestBody ManagementReadInput input
   ) throws InterruptedException {
-    logger.trace("id = {}", id);
-    logger.trace("operation = {}", operation);
-    logger.trace("path = {}", path);
+    val request = new ReadRequest(format, input.getPath());
+    return ResponseEntity.ok(manage(id, request));
+  }
+
+  @Data
+  public static class ManagementWriteInput {
+    String path;
+    LwM2mNode data;
+    WriteRequest.Mode mode = WriteRequest.Mode.REPLACE;
+  }
+
+  @PostMapping("/{id}/management/write")
+  public ResponseEntity write(
+    @PathVariable Long id,
+    @RequestBody ManagementWriteInput input
+  ) throws InterruptedException {
+    val request = new WriteRequest(input.getMode(), format, input.getPath(), input.getData());
+    return ResponseEntity.ok(manage(id, request));
+  }
+
+  private <T extends LwM2mResponse> T manage(Long id, DownlinkRequest<T> request) throws InterruptedException {
     val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-    val registration = lwM2mServer.getRegistrationService().getById(client.getRegistrationId());
-    switch (operation) {
-      case "read":
-        val readRequest = new ReadRequest(ContentFormat.JSON, path);
-        logger.trace("read request = {}", readRequest);
-        val readResponse = lwM2mServer.send(registration, readRequest);
-        logger.trace("read response = {}", readResponse);
-        return ResponseEntity.ok(readResponse);
-      case "write":
-        val writeRequest = new WriteRequest(WriteRequest.Mode.REPLACE, ContentFormat.JSON, path, data);
-        logger.trace("write request = {}", writeRequest);
-        val writeResponse = lwM2mServer.send(registration, writeRequest);
-        logger.trace("write response = {}", writeResponse);
-        return ResponseEntity.ok(writeResponse);
-      case "create":
-      case "delete":
-      case "execute":
-      case "discover":
-      case "write-attributes":
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-      default:
-        return ResponseEntity.badRequest().build();
-    }
+    val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
+    return lwM2mServer.send(registration, request);
   }
 
 }
