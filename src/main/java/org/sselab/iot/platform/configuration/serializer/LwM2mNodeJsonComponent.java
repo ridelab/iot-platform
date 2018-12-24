@@ -23,7 +23,8 @@ public class LwM2mNodeJsonComponent {
     public void serialize(LwM2mResource value, JsonGenerator generator, SerializerProvider provider) throws IOException {
       generator.writeStartObject();
       generator.writeNumberField("id", value.getId());
-      generator.writeStringField("type", value.getType().name());
+      generator.writeObjectField("type", value.getType());
+      generator.writeBooleanField("multiple", value.isMultiInstances());
       if (value.isMultiInstances()) {
         generator.writeObjectField("values", value.getValues());
       } else {
