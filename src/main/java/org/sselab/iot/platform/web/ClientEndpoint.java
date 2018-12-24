@@ -2,9 +2,10 @@ package org.sselab.iot.platform.web;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.*;
 import org.eclipse.leshan.core.response.*;
@@ -16,6 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.sselab.iot.platform.configuration.LwM2mServerHolder;
 import org.sselab.iot.platform.repository.ClientRepository;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RepositoryRestController
@@ -29,14 +33,20 @@ public class ClientEndpoint {
 
   private final ContentFormat format = ContentFormat.JSON;
 
+  @Value
+  private static class LwM2mModelV {
+    Map<Integer, ObjectModel> objects;
+  }
+
   @GetMapping("/{id}/model")
-  public ResponseEntity<LwM2mModel> model(
+  public ResponseEntity<LwM2mModelV> model(
     @PathVariable Long id
   ) {
     val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
     val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
     val model = LwM2mServerHolder.getServer().getModelProvider().getObjectModel(registration);
-    return ResponseEntity.ok(model);
+    val modelV = new LwM2mModelV(model.getObjectModels().stream().collect(Collectors.toMap(x -> x.id, x -> x)));
+    return ResponseEntity.ok(modelV);
   }
 
   @Data
