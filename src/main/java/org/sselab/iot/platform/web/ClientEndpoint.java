@@ -75,6 +75,20 @@ public class ClientEndpoint {
     return ResponseEntity.ok(manage(id, request));
   }
 
+  @Data
+  public static class ManagementDiscoverInput {
+    String path;
+  }
+
+  @PostMapping("/{id}/management/discover")
+  public ResponseEntity discover(
+    @PathVariable Long id,
+    @RequestBody ManagementDiscoverInput input
+  ) throws InterruptedException {
+    val request = new DiscoverRequest(input.getPath());
+    return ResponseEntity.ok(manage(id, request));
+  }
+
   private <T extends LwM2mResponse> T manage(Long id, DownlinkRequest<T> request) throws InterruptedException {
     val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
     val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
