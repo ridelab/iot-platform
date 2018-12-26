@@ -5,6 +5,13 @@ spring:
     banner-mode: 'off'
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://120.78.209.65:3306/iot_platform?characterEncoding=utf8&useSSL=false
+    username: root
+    password: '@SSELab1308'
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 server:
   port: 8080
