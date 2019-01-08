@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RepositoryRestController
-@RequestMapping("/clients")
+@RequestMapping("/api/clients")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ClientEndpoint {
 

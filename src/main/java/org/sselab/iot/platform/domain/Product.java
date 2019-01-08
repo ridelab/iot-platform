@@ -39,4 +39,7 @@ public class Product {
 
   @NonNull
   String protocol;    //接入协议
+
+  public Product() {
+  }
 }

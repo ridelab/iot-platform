@@ -31,4 +31,7 @@ public class Device {
 
   @NonNull
   Boolean status = false; //设备在离线状态
+
+  public Device() {
+  }
 }
