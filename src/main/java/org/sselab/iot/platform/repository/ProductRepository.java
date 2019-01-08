@@ -1,6 +1,7 @@
 package org.sselab.iot.platform.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.sselab.iot.platform.domain.Product;
 
 import java.util.List;
@@ -14,5 +15,5 @@ import java.util.List;
  */
 public interface ProductRepository extends JpaRepository<Product,Long> {
 
-  List<Product> findByUserId(Long userId);
+  List<Product> findByUserId(@Param("userId") Long userId);
 }
