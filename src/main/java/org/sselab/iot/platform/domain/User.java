@@ -30,4 +30,7 @@ public class User {
 
   @NonNull
   String password;    //登录密码
+
+  public User() {
+  }
 }

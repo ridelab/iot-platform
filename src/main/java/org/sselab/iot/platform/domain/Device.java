@@ -2,7 +2,9 @@ package org.sselab.iot.platform.domain;
 
 import lombok.Data;
 import lombok.NonNull;
+import org.springframework.core.annotation.AliasFor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,7 +24,7 @@ public class Device {
   Long productId;     //设备所属产品id
 
   @NonNull
-  String IMEI;        //IMEI 设备全球唯一识别号（15位）
+  String imei;        //IMEI 设备全球唯一识别号（15位）
 
   String authCode;
 
@@ -31,4 +33,7 @@ public class Device {
 
   @NonNull
   Boolean status = false; //设备在离线状态
+
+  public Device() {
+  }
 }
