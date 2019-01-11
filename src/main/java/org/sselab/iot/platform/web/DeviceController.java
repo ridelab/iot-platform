@@ -40,4 +40,5 @@ public class DeviceController {
     val response = new Response(result);
     return ResponseEntity.ok(response);
   }
+
 }

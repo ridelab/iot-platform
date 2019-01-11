@@ -1,10 +1,7 @@
 package org.sselab.iot.platform.web;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.*;
@@ -18,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.sselab.iot.platform.configuration.LwM2mServerHolder;
 import org.sselab.iot.platform.repository.ClientRepository;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,7 +35,8 @@ public class ClientEndpoint {
 
   @Value
   private static class LwM2mModelV {
-    Map<Integer, ObjectModel> objects;
+    Map<Integer, ObjectModel> objects;    //<ObjectId, ObjectModel>
+    Map<Integer, Set<String>> resources;  //resource的过滤条件，<ObjectId, all resourceId of client objects>
   }
 
   @GetMapping("/{id}/model")
@@ -45,8 +46,45 @@ public class ClientEndpoint {
     val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
     val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
     val model = LwM2mServerHolder.getServer().getModelProvider().getObjectModel(registration);
-    val modelV = new LwM2mModelV(model.getObjectModels().stream().collect(Collectors.toMap(x -> x.id, x -> x)));
+    val modelV = new LwM2mModelV(model.getObjectModels().stream().collect(Collectors.toMap(x -> x.id, x -> x)),
+                                  new HashMap<>());
     return ResponseEntity.ok(modelV);
+  }
+
+  @GetMapping("/{id}/model/objects")
+  public ResponseEntity<LwM2mModelV> objectsModel(
+    @PathVariable Long id
+  ) throws InterruptedException {
+    val client = clientRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
+    val registration = client.getRegistration().orElseThrow(IllegalStateException::new);
+    val model = LwM2mServerHolder.getServer().getModelProvider().getObjectModel(registration);
+
+    val objLink = new LwM2mModelV(new HashMap<>(), new HashMap<>());
+    for(val link : registration.getObjectLinks()) {
+
+      val objPath = link.getUrl().substring(1, link.getUrl().length());
+      if(!(objPath.equals("")) && !(objPath.equals("/"))) {
+        val url = objPath.split("/");
+        val objectId = Integer.parseInt(url[0]);        //对象id
+        val objInstanceId = Integer.parseInt(url[1]);   //对象实例id
+        val objModel = model.getObjectModel(Integer.parseInt(url[0]));
+        objLink.getObjects().put(objectId, objModel);
+
+        //获取对象实例的资源列表
+        val resourceLink = discover(id, new ManagementDiscoverInput(objPath)).getBody().getObjectLinks();
+        val resourceIdSet = new HashSet<String>();
+        for(val resource : resourceLink) {
+          val resourceUrl = resource.getUrl().split("/");
+
+          if (resourceUrl.length > 3) {
+              resourceIdSet.add(resourceUrl[3]);
+          }
+        }
+        objLink.getResources().put(objectId, resourceIdSet);
+      }
+    }
+
+    return ResponseEntity.ok(objLink);
   }
 
   @Data
@@ -95,6 +133,7 @@ public class ClientEndpoint {
   }
 
   @Data
+  @AllArgsConstructor
   public static class ManagementDiscoverInput {
     String path;
   }
